@@ -1,4 +1,4 @@
-var Cluster = require('./components/cluster.js');
+var Galaxy = require('./components/galaxy.js');
 var Utilities = require('./utils.js');
 var Graphics = require('./graphics.js');
 
@@ -6,6 +6,6 @@ var Graphics = require('./graphics.js');
 	
 	document.addEventListener('DOMContentLoaded',function(){
 
-		Cluster().init();
+		Galaxy().init();
 	});
 })();

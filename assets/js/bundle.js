@@ -158,11 +158,9 @@ module.exports = function () {
       var vertices = [];
 
       for (var i = 0; i < 10000; i++) {
-        vertices.push(THREE.MathUtils.randFloatSpread(4000)); // x
-
-        vertices.push(THREE.MathUtils.randFloatSpread(4000)); // y
-
-        vertices.push(THREE.MathUtils.randFloatSpread(4000)); // z
+        vertices.push(THREE.MathUtils.randFloatSpread(4000));
+        vertices.push(THREE.MathUtils.randFloatSpread(4000));
+        vertices.push(THREE.MathUtils.randFloatSpread(4000));
       }
 
       var size = 1;
@@ -185,9 +183,7 @@ module.exports = function () {
         clusterGeometry.vertices.push(new THREE.Vector3(THREE.MathUtils.randFloatSpread(spread), THREE.MathUtils.randFloatSpread(spread), THREE.MathUtils.randFloatSpread(spread)));
       }
 
-      var color1 = new THREE.Color(0, 0, 1);
-      var color2 = new THREE.Color(1, 1, 0);
-      var colors = this.interpolateD3Colors(clusterGeometry, color1, color2, interps[5], true);
+      var colors = this.interpolateD3Colors(clusterGeometry, interps[5], true);
       var size = 2;
       if (utils.iOS() == true) size = settings.iOS.particleSize;
       var particles = new THREE.Points(clusterGeometry, new THREE.PointsMaterial({
@@ -208,14 +204,16 @@ module.exports = function () {
           var min = -500;
           var max = 4000;
           var maxDistance = 1000 + (Math.random() * (max - min) + min);
-          if (clusterGeometry.vertices[i].distanceTo(origin) > maxDistance) clusterGeometry.vertices[i].set(THREE.MathUtils.randFloatSpread(1000), THREE.MathUtils.randFloatSpread(1000), THREE.MathUtils.randFloatSpread(1000));
+          if (clusterGeometry.vertices[i].distanceTo(origin) > maxDistance) clusterGeometry.vertices[i].set(THREE.MathUtils.randFloatSpread(1000), THREE.MathUtils.randFloatSpread(1000), THREE.MathUtils.randFloatSpread(1000)); // let ratio = clusterGeometry.vertices[i].distanceTo(origin) / maxDistance;
+          // clusterGeometry.colors[i] = this.rgbStringToColor(interps[5](ratio));
+
           clusterGeometry.vertices[i].set(clusterGeometry.vertices[i].x + force.x, clusterGeometry.vertices[i].y + force.y, clusterGeometry.vertices[i].z + force.z);
         }
 
         clusterGeometry.verticesNeedUpdate = true;
       }
     },
-    interpolateD3Colors: function interpolateD3Colors(geometry, color1, color2, interpolatorFunc, reverse) {
+    interpolateD3Colors: function interpolateD3Colors(geometry, interpolatorFunc, reverse) {
       reverse = reverse || false;
       var colors = [];
       var vertexCount = geometry.vertices.length;
@@ -683,7 +681,7 @@ var _require = require("three"),
 },{"three":5}],3:[function(require,module,exports){
 "use strict";
 
-var Cluster = require('./components/cluster.js');
+var Galaxy = require('./components/galaxy.js');
 
 var Utilities = require('./utils.js');
 
@@ -691,11 +689,11 @@ var Graphics = require('./graphics.js');
 
 (function () {
   document.addEventListener('DOMContentLoaded', function () {
-    Cluster().init();
+    Galaxy().init();
   });
 })();
 
-},{"./components/cluster.js":1,"./graphics.js":2,"./utils.js":4}],4:[function(require,module,exports){
+},{"./components/galaxy.js":1,"./graphics.js":2,"./utils.js":4}],4:[function(require,module,exports){
 "use strict";
 
 (function () {

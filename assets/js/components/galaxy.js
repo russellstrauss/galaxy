@@ -148,9 +148,7 @@ module.exports = function() {
 			let geometry = new THREE.BufferGeometry();
 			let vertices = [];
 			for (let i = 0; i < 10000; i++) {
-				vertices.push(THREE.MathUtils.randFloatSpread(4000)); // x
-				vertices.push(THREE.MathUtils.randFloatSpread(4000)); // y
-				vertices.push(THREE.MathUtils.randFloatSpread(4000)); // z
+				vertices.push(THREE.MathUtils.randFloatSpread(4000)); vertices.push(THREE.MathUtils.randFloatSpread(4000)); vertices.push(THREE.MathUtils.randFloatSpread(4000));
 			}
 			
 			let size = 1;
@@ -175,9 +173,7 @@ module.exports = function() {
 				clusterGeometry.vertices.push(new THREE.Vector3(THREE.MathUtils.randFloatSpread(spread), THREE.MathUtils.randFloatSpread(spread), THREE.MathUtils.randFloatSpread(spread)))
 			}
 			
-			let color1 = new THREE.Color(0, 0, 1);
-			let color2 = new THREE.Color(1, 1, 0);
-			let colors = this.interpolateD3Colors(clusterGeometry, color1, color2, interps[5], true);
+			let colors = this.interpolateD3Colors(clusterGeometry, interps[5], true);
 			
 			let size = 2;
 			if (utils.iOS() == true) size = settings.iOS.particleSize;
@@ -202,13 +198,16 @@ module.exports = function() {
 					let maxDistance = 1000  + (Math.random() * (max - min) + min);
 					if (clusterGeometry.vertices[i].distanceTo(origin) > maxDistance) clusterGeometry.vertices[i].set(THREE.MathUtils.randFloatSpread(1000), THREE.MathUtils.randFloatSpread(1000), THREE.MathUtils.randFloatSpread(1000));
 					
+					// let ratio = clusterGeometry.vertices[i].distanceTo(origin) / maxDistance;
+					// clusterGeometry.colors[i] = this.rgbStringToColor(interps[5](ratio));
+					
 					clusterGeometry.vertices[i].set(clusterGeometry.vertices[i].x + force.x, clusterGeometry.vertices[i].y + force.y, clusterGeometry.vertices[i].z + force.z);
 				}
 				clusterGeometry.verticesNeedUpdate = true;
 			}
 		},
 		
-		interpolateD3Colors: function(geometry, color1, color2, interpolatorFunc, reverse) {
+		interpolateD3Colors: function(geometry, interpolatorFunc, reverse) {
 			
 			reverse = reverse || false;
 			let colors = [];
@@ -217,7 +216,6 @@ module.exports = function() {
 			for (let i = 0; i < vertexCount; i++) {
 				let interpolator = (i/(vertexCount - 1));
 				colors[i] = this.rgbStringToColor(interpolatorFunc(interpolator));
-				
 				geometry.colors.push(colors[i]);
 			}
 			if (reverse) colors.reverse();
