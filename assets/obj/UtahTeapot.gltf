@@ -1,0 +1,116 @@
+{
+    "asset": {
+        "profile": {
+            "api": "WebGL",
+            "version": "1.0.3"
+        },
+        "version": "1.0"
+    },
+    "cameras": {
+        "Camera": {
+            "perspective": {
+                "aspectRatio": 1.7036,
+                "yfov": 0.50338,
+                "zfar": 100,
+                "znear": 0.1
+            },
+            "type": "perspective"
+        }
+    },
+    "extensionsUsed": ["KHR_materials_common"],
+    "extras": {
+        "lights": {
+            "Lamp": {
+                "point": {
+                    "color": [1,1,1],
+                    "constantAttenuation": 1,
+                    "linearAttenuation": 0,
+                    "quadraticAttenuation": 0.033333
+                },
+                "type": "point"
+            },
+            "Spot": {
+                "point": {
+                    "color": [1,1,1],
+                    "constantAttenuation": 1,
+                    "linearAttenuation": 0.033333,
+                    "quadraticAttenuation": 0
+                },
+                "type": "point"
+            },
+            "Spot.001": {
+                "point": {
+                    "color": [1,1,1],
+                    "constantAttenuation": 1,
+                    "linearAttenuation": 0.033333,
+                    "quadraticAttenuation": 0
+                },
+                "type": "point"
+            },
+            "Spot.002": {
+                "point": {
+                    "color": [1,1,1],
+                    "constantAttenuation": 1,
+                    "linearAttenuation": 0.033333,
+                    "quadraticAttenuation": 0
+                },
+                "type": "point"
+            },
+            "Sun": {
+                "directional": {
+                    "color": [1,1,1]
+                },
+                "type": "directional"
+            }
+        }
+    },
+    "images": {
+        "Render Result": {
+            "uri": ""
+        },
+        "Viewer Node": {
+            "uri": ""
+        }
+    },
+    "materials": {
+        "Glossy": {
+            "extensions": {
+                "KHR_materials_common": {
+                    "technique": "PHONG",
+                    "values": {
+                        "ambient": [1,1,1,1],
+                        "diffuse": [0.64,0.64,0.512,1],
+                        "doubleSided": false,
+                        "emission": [0,0,0,1],
+                        "shininess": 50,
+                        "specular": [0.25,0.25,0.25,1],
+                        "transparency": 1,
+                        "transparent": false
+                    }
+                }
+            }
+        }
+    },
+    "nodes": {
+        "Teapot": {
+            "children": [],
+            "matrix": [0,1,0,0,-1,0,0,0,0,0,1,0,0,0,0,1],
+            "meshes": ["Mesh"],
+            "name": "Teapot"
+        }
+    },
+    "samplers": {
+        "default": {}
+    },
+    "scene": "Scene",
+    "scenes": {
+        "Scene": {
+            "extras": {
+                "active_camera": "",
+                "background_color": [0.050876,0.050876,0.050876],
+                "frames_per_second": 24
+            },
+            "nodes": ["Teapot"]
+        }
+    }
+}

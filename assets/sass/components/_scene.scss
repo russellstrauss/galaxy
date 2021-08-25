@@ -1,0 +1,30 @@
+$textColor: #ccc;
+$legendTextColor: #ccc;
+$textBackground: rgba(255, 255, 255, .1);
+
+.sound-controls	{
+	position: absolute;
+	width: 50px;
+	height: 50px;
+	right: 20px;
+	bottom: 20px;
+	
+	.enable {
+		fill: white;
+		display: none;
+		cursor: pointer;
+		
+		&.active {
+			display: block;
+		}
+	}
+	
+	.disable {
+		display: none;
+		cursor: pointer;
+		
+		&.active {
+			display: block;
+		}
+	}
+}
