@@ -1,6 +1,4 @@
-# Vector Fields
-
-Galaxy
+# Galaxy
 
 ## Authors
 
