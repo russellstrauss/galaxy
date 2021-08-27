@@ -28,20 +28,10 @@ module.exports = function () {
       starSize: 3
     }
   };
-  var geometry;
-  var initialized = false,
+  var clusterGeometry,
+      initialized = false,
       frameCount = 0;
-  var clusterGeometry;
-  var colors = ['red', 'blue', 'green', 'white', 'purple', 'pink', 'orange', '#710C96']; // whiskey
-
-  var renderer, scene, camera, controls, floor;
-  var targetList = [];
-  var black = new THREE.Color('black'),
-      white = new THREE.Color('white'),
-      green = new THREE.Color(0x00ff00),
-      red = new THREE.Color('#ED0000'),
-      blue = new THREE.Color(0x0000ff);
-  var stats = new Stats();
+  var renderer, scene, camera, controls;
   var interps = [d3.interpolateRainbow, d3.interpolateRgb('#450F66', '#B36002'), d3.interpolateRgb('white', 'red'), d3.interpolateSinebow, d3.interpolateYlOrRd, d3.interpolateYlGnBu, d3.interpolateRdPu, d3.interpolatePuBu, d3.interpolateGnBu, d3.interpolateBuPu, d3.interpolateCubehelixDefault, d3.interpolateCool, d3.interpolateWarm, d3.interpolateCividis, d3.interpolatePlasma, d3.interpolateMagma, d3.interpolateInferno, d3.interpolateViridis, d3.interpolateTurbo, d3.interpolatePurples, d3.interpolateReds, d3.interpolateOranges, d3.interpolateGreys, d3.interpolateGreens, d3.interpolateBlues, d3.interpolateSpectral, d3.interpolateRdYlBu, d3.interpolateRdBu, d3.interpolatePuOr, d3.interpolatePiYG, d3.interpolatePRGn];
   var colorSchemes = [d3.schemeCategory10, d3.schemeAccent, d3.schemeDark2, d3.schemePaired, d3.schemePastel1, d3.schemePastel2, d3.schemeSet1, d3.schemeSet2, d3.schemeSet3, d3.schemeTableau10];
   var curve = [],
@@ -73,9 +63,9 @@ module.exports = function () {
       gfx.resizeRendererOnWindowResize(renderer, camera);
       gfx.setUpLights();
       gfx.setCameraLocation(camera, settings.defaultCameraLocation);
+      clock = new THREE.Clock();
       this.addStars();
       this.addCluster();
-      clock = new THREE.Clock();
       this.createCameraTrajectory();
       this.firstFrame();
 
@@ -94,8 +84,8 @@ module.exports = function () {
       camera.lookAt(cameraFocalPoint);
     },
     everyFrame: function everyFrame() {
-      if (!initialized) this.firstFrame();
-      this.updateCamera();
+      if (!initialized) this.firstFrame(); // this.updateCamera();
+
       this.updateParticles();
       frameCount++;
     },
@@ -179,8 +169,12 @@ module.exports = function () {
       for (var i = 0; i < 20000; i++) {
         var min = -1000;
         var max = 1000;
-        var spread = Math.random() * (max - min) + min;
-        clusterGeometry.vertices.push(new THREE.Vector3(THREE.MathUtils.randFloatSpread(spread), THREE.MathUtils.randFloatSpread(spread), THREE.MathUtils.randFloatSpread(spread)));
+        var spread = Math.random() * (max - min) + min; // clusterGeometry.vertices.push(new THREE.Vector3(THREE.MathUtils.randFloatSpread(spread), THREE.MathUtils.randFloatSpread(spread), THREE.MathUtils.randFloatSpread(spread)));
+        //debugging
+        // debugger;
+
+        clusterGeometry.vertices.push(new THREE.Vector3(2000, 2000, 2000));
+        if (i < 10) console.log("Position: ", clusterGeometry.vertices[i]);
       }
 
       var colors = this.interpolateD3Colors(clusterGeometry, interps[5], true);
@@ -196,15 +190,26 @@ module.exports = function () {
       if (clusterGeometry) {
         for (var i = 0; i < clusterGeometry.vertices.length; i++) {
           var scalar = .01;
-          var x = -clusterGeometry.vertices[i].y * scalar;
-          var y = -clusterGeometry.vertices[i].z * scalar;
-          var z = -clusterGeometry.vertices[i].x * scalar; // galaxy
+          var x = clusterGeometry.vertices[i].x,
+              y = clusterGeometry.vertices[i].y,
+              z = clusterGeometry.vertices[i].z;
+          var forceX = -clusterGeometry.vertices[i].y * scalar;
+          var forceY = -clusterGeometry.vertices[i].z * scalar;
+          var forceZ = -clusterGeometry.vertices[i].x * scalar; // galaxy
 
-          var force = new THREE.Vector3(x, y, z);
+          var force = new THREE.Vector3(forceX, forceY, forceZ);
+
+          if (i === 0) {
+            console.log("Pos: ", x, y, z);
+            console.log("Force: ", force);
+          }
+
           var min = -500;
           var max = 4000;
-          var maxDistance = 1000 + (Math.random() * (max - min) + min);
-          if (clusterGeometry.vertices[i].distanceTo(origin) > maxDistance) clusterGeometry.vertices[i].set(THREE.MathUtils.randFloatSpread(1000), THREE.MathUtils.randFloatSpread(1000), THREE.MathUtils.randFloatSpread(1000)); // let ratio = clusterGeometry.vertices[i].distanceTo(origin) / maxDistance;
+          var maxDistance = 1000; //  + (Math.random() * (max - min) + min);
+          // if (clusterGeometry.vertices[i].distanceTo(origin) > maxDistance) clusterGeometry.vertices[i].set(THREE.MathUtils.randFloatSpread(1000), THREE.MathUtils.randFloatSpread(1000), THREE.MathUtils.randFloatSpread(1000));
+
+          if (clusterGeometry.vertices[i].distanceTo(origin) > maxDistance) clusterGeometry.vertices[i].set(100, 100, 100); // let ratio = clusterGeometry.vertices[i].distanceTo(origin) / maxDistance;
           // clusterGeometry.colors[i] = this.rgbStringToColor(interps[5](ratio));
 
           clusterGeometry.vertices[i].set(clusterGeometry.vertices[i].x + force.x, clusterGeometry.vertices[i].y + force.y, clusterGeometry.vertices[i].z + force.z);
@@ -221,10 +226,10 @@ module.exports = function () {
       for (var i = 0; i < vertexCount; i++) {
         var interpolator = i / (vertexCount - 1);
         colors[i] = this.rgbStringToColor(interpolatorFunc(interpolator));
-        geometry.colors.push(colors[i]);
+        geometry.colors.push(colors[i]); // if (i < 10) console.log(colors[i]);
       }
 
-      if (reverse) colors.reverse();
+      if (reverse === true) colors.reverse();
       return colors;
     },
     rgbStringToColor: function rgbStringToColor(rgbString) {
