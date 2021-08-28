@@ -1,13 +1,6 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 
-var _require = require('three'),
-    Vector3 = _require.Vector3,
-    Clock = _require.Clock,
-    MathUtils = _require.MathUtils; // var StartAudioContext = require('startaudiocontext');
-// var howler = require('howler');
-
-
 module.exports = function () {
   var settings = {
     defaultCameraLocation: {
@@ -33,7 +26,6 @@ module.exports = function () {
       frameCount = 0;
   var renderer, scene, camera, controls;
   var interps = [d3.interpolateRainbow, d3.interpolateRgb('#450F66', '#B36002'), d3.interpolateRgb('white', 'red'), d3.interpolateSinebow, d3.interpolateYlOrRd, d3.interpolateYlGnBu, d3.interpolateRdPu, d3.interpolatePuBu, d3.interpolateGnBu, d3.interpolateBuPu, d3.interpolateCubehelixDefault, d3.interpolateCool, d3.interpolateWarm, d3.interpolateCividis, d3.interpolatePlasma, d3.interpolateMagma, d3.interpolateInferno, d3.interpolateViridis, d3.interpolateTurbo, d3.interpolatePurples, d3.interpolateReds, d3.interpolateOranges, d3.interpolateGreys, d3.interpolateGreens, d3.interpolateBlues, d3.interpolateSpectral, d3.interpolateRdYlBu, d3.interpolateRdBu, d3.interpolatePuOr, d3.interpolatePiYG, d3.interpolatePRGn];
-  var colorSchemes = [d3.schemeCategory10, d3.schemeAccent, d3.schemeDark2, d3.schemePaired, d3.schemePastel1, d3.schemePastel2, d3.schemeSet1, d3.schemeSet2, d3.schemeSet3, d3.schemeTableau10];
   var curve = [],
       progress = 0,
       default_camera_speed = .005,
@@ -45,7 +37,10 @@ module.exports = function () {
       catmullRomCurve;
   var cameraFocalPoint = new THREE.Vector3(0, 0, 0),
       origin = new THREE.Vector3(0, 0, 0),
+      particles,
+      particleCount = 60000,
       particleSpread = 500,
+      positions,
       trajectory_iteration_count = 40,
       trajectoryReverse = false;
   return {
@@ -64,6 +59,7 @@ module.exports = function () {
       gfx.setUpLights();
       gfx.setCameraLocation(camera, settings.defaultCameraLocation);
       clock = new THREE.Clock();
+      clock.start();
       this.addStars();
       this.addCluster();
       this.createCameraTrajectory();
@@ -84,8 +80,8 @@ module.exports = function () {
       camera.lookAt(cameraFocalPoint);
     },
     everyFrame: function everyFrame() {
-      if (!initialized) this.firstFrame(); // this.updateCamera();
-
+      if (!initialized) this.firstFrame();
+      this.updateCamera();
       this.updateParticles();
       frameCount++;
     },
@@ -132,7 +128,6 @@ module.exports = function () {
     },
     updateCamera: function updateCamera() {
       dt = clock.getDelta();
-      clock.start();
       var cameraPosition = catmullRomCurve.getPointAt(progress);
       camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
       camera.lookAt(cameraFocalPoint);
@@ -156,31 +151,32 @@ module.exports = function () {
       var size = 1;
       if (utils.iOS() == true) size = settings.iOS.starSize;
       geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-      var particles = new THREE.Points(geometry, new THREE.PointsMaterial({
+      var stars = new THREE.Points(geometry, new THREE.PointsMaterial({
         color: 0x888888,
         size: size
       }));
-      scene.add(particles);
+      scene.add(stars);
     },
     addCluster: function addCluster() {
-      clusterGeometry = new THREE.Geometry();
+      clusterGeometry = new THREE.BufferGeometry();
       var vertices = [];
 
-      for (var i = 0; i < 20000; i++) {
+      for (var i = 0; i < particleCount; i += 3) {
         var min = -1000;
         var max = 1000;
-        var spread = Math.random() * (max - min) + min; // clusterGeometry.vertices.push(new THREE.Vector3(THREE.MathUtils.randFloatSpread(spread), THREE.MathUtils.randFloatSpread(spread), THREE.MathUtils.randFloatSpread(spread)));
-        //debugging
-        // debugger;
+        var spread = Math.random() * (max - min) + min;
+        vertices.push(THREE.MathUtils.randFloatSpread(spread));
+        vertices.push(THREE.MathUtils.randFloatSpread(spread));
+        vertices.push(THREE.MathUtils.randFloatSpread(spread));
+      } // set colors and positions
 
-        clusterGeometry.vertices.push(new THREE.Vector3(2000, 2000, 2000));
-        if (i < 10) console.log("Position: ", clusterGeometry.vertices[i]);
-      }
 
-      var colors = this.interpolateD3Colors(clusterGeometry, interps[5], true);
-      var size = 2;
+      clusterGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+      var colors = this.interpolateD3Colors(clusterGeometry, interps[5], false);
+      clusterGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+      var size = 1;
       if (utils.iOS() == true) size = settings.iOS.particleSize;
-      var particles = new THREE.Points(clusterGeometry, new THREE.PointsMaterial({
+      particles = new THREE.Points(clusterGeometry, new THREE.PointsMaterial({
         vertexColors: THREE.VertexColors,
         size: size
       }));
@@ -188,45 +184,39 @@ module.exports = function () {
     },
     updateParticles: function updateParticles() {
       if (clusterGeometry) {
-        for (var i = 0; i < clusterGeometry.vertices.length; i++) {
+        var pos = particles.geometry.attributes.position.array;
+
+        for (var i = 0; i < particleCount; i += 3) {
+          var position = new THREE.Vector3(pos[i + 0], pos[i + 1], pos[i + 2]); // define vector field
+
           var scalar = .01;
-          var x = clusterGeometry.vertices[i].x,
-              y = clusterGeometry.vertices[i].y,
-              z = clusterGeometry.vertices[i].z;
-          var forceX = -clusterGeometry.vertices[i].y * scalar;
-          var forceY = -clusterGeometry.vertices[i].z * scalar;
-          var forceZ = -clusterGeometry.vertices[i].x * scalar; // galaxy
+          var forceX = -position.y * scalar;
+          var forceY = -position.z * scalar;
+          var forceZ = -position.x * scalar; // galaxy
 
           var force = new THREE.Vector3(forceX, forceY, forceZ);
-
-          if (i === 0) {
-            console.log("Pos: ", x, y, z);
-            console.log("Force: ", force);
-          }
-
           var min = -500;
           var max = 4000;
-          var maxDistance = 1000; //  + (Math.random() * (max - min) + min);
-          // if (clusterGeometry.vertices[i].distanceTo(origin) > maxDistance) clusterGeometry.vertices[i].set(THREE.MathUtils.randFloatSpread(1000), THREE.MathUtils.randFloatSpread(1000), THREE.MathUtils.randFloatSpread(1000));
-
-          if (clusterGeometry.vertices[i].distanceTo(origin) > maxDistance) clusterGeometry.vertices[i].set(100, 100, 100); // let ratio = clusterGeometry.vertices[i].distanceTo(origin) / maxDistance;
-          // clusterGeometry.colors[i] = this.rgbStringToColor(interps[5](ratio));
-
-          clusterGeometry.vertices[i].set(clusterGeometry.vertices[i].x + force.x, clusterGeometry.vertices[i].y + force.y, clusterGeometry.vertices[i].z + force.z);
+          var maxDistance = 1000 + (Math.random() * (max - min) + min);
+          if (position.distanceTo(origin) > maxDistance) pos[i] = THREE.MathUtils.randFloatSpread(1000), pos[i + 1] = THREE.MathUtils.randFloatSpread(1000), pos[i + 2] = THREE.MathUtils.randFloatSpread(1000);
+          pos[i + 0] += forceX;
+          pos[i + 1] += forceY;
+          pos[i + 2] += forceZ;
         }
 
-        clusterGeometry.verticesNeedUpdate = true;
+        particles.geometry.attributes.position.needsUpdate = true;
       }
     },
     interpolateD3Colors: function interpolateD3Colors(geometry, interpolatorFunc, reverse) {
       reverse = reverse || false;
       var colors = [];
-      var vertexCount = geometry.vertices.length;
 
-      for (var i = 0; i < vertexCount; i++) {
-        var interpolator = i / (vertexCount - 1);
-        colors[i] = this.rgbStringToColor(interpolatorFunc(interpolator));
-        geometry.colors.push(colors[i]); // if (i < 10) console.log(colors[i]);
+      for (var i = 0; i < particleCount; i += 3) {
+        var interpolator = i / (particleCount - 1);
+        var color = this.rgbStringToColor(interpolatorFunc(interpolator));
+        colors.push(color.r);
+        colors.push(color.g);
+        colors.push(color.b);
       }
 
       if (reverse === true) colors.reverse();
@@ -239,7 +229,7 @@ module.exports = function () {
   };
 };
 
-},{"three":5}],2:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 "use strict";
 
 var _require = require("three"),
